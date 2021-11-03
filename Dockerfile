@@ -126,7 +126,8 @@ RUN mkdir -p /src/build \
 # Install GNU Radio
 RUN mkdir -p /src/build \
 && git clone https://github.com/gnuradio/gnuradio.git /src/gnuradio --branch master
-RUN cd /src/gnuradio && wget https://github.com/gnuradio/gnuradio/pull/5265.diff && git apply 5265.diff
+RUN cd /src/gnuradio && git checkout 50d00f108c3ad62cd7beed6a4cbfdf4f0321c5aa \
+&& wget https://github.com/gnuradio/gnuradio/pull/5265.diff && git apply 5265.diff
 RUN cd /src/gnuradio && mkdir build && cd build && \
   cmake .. && make -j10 && make install
 
