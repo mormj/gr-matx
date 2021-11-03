@@ -19,13 +19,6 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -yq \
     python3-dev \
     python3-distutils
 
-# Install MatX
-RUN mkdir -p /src/build && git clone https://github.com/NVIDIA/MatX /src/MatX
-RUN cd /src/MatX && mkdir build && cd build && \
-    cmake -DBUILD_TESTS=ON -DBUILD_BENCHMARKS=OFF -DBUILD_EXAMPLES=OFF -DBUILD_DOCS=OFF .. && \
-    make -j4
-
-
 # Install GNU Radio Prerequisites
 # CPP deps
 RUN DEBIAN_FRONTEND=noninteractive \
@@ -88,7 +81,6 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get install -y \
        --no-install-recommends \
        build-essential \
        ccache \
-       cmake \
        libad9361-dev \
        libboost-date-time-dev \
        libboost-dev \
@@ -144,5 +136,10 @@ RUN git clone https://github.com/gnuradio/gr-cuda.git /src/gr-cuda --branch main
 && cd /src/gr-cuda && mkdir build && cd build && \
   cmake .. && make -j10 && make install
 
+# Install MatX
+RUN mkdir -p /src/build && git clone https://github.com/NVIDIA/MatX /src/MatX
+RUN cd /src/MatX && mkdir build && cd build && \
+    cmake -DBUILD_TESTS=OFF -DBUILD_BENCHMARKS=OFF -DBUILD_EXAMPLES=OFF -DBUILD_DOCS=OFF .. && \
+    make -j4 && make install
 
 WORKDIR /workspace/code

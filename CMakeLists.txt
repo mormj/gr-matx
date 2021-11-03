@@ -10,8 +10,28 @@
 # Project setup
 ########################################################################
 cmake_minimum_required(VERSION 3.8)
-project(gr-matx CXX C)
+project(gr-matx CXX C CUDA)
 enable_testing()
+
+file(DOWNLOAD https://raw.githubusercontent.com/rapidsai/rapids-cmake/branch-21.12/RAPIDS.cmake
+     ${CMAKE_BINARY_DIR}/RAPIDS.cmake)
+include(${CMAKE_BINARY_DIR}/RAPIDS.cmake)
+
+include(rapids-cmake)
+include(rapids-cpm)
+include(rapids-export)
+include(rapids-find)
+
+if(NOT DEFINED CMAKE_CUDA_ARCHITECTURES)
+    include(rapids-cuda)
+    set(CMAKE_CUDA_ARCHITECTURES "NATIVE")
+    message(STATUS "Auto-detecting GPU architectures since CMAKE_CUDA_ARCHITECTURES not defined")
+    rapids_cuda_init_architectures(MATX)
+endif()
+
+if (NOT CMAKE_CUDA_ARCHITECTURES)
+    set(CMAKE_CUDA_ARCHITECTURES "70;75;80") 
+endif()    
 
 # Install to PyBOMBS target prefix if defined
 if(DEFINED ENV{PYBOMBS_PREFIX})
@@ -47,15 +67,15 @@ if((CMAKE_CXX_COMPILER_ID MATCHES "Clang" OR
     CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     AND NOT WIN32)
     #http://gcc.gnu.org/wiki/Visibility
-    add_definitions(-fvisibility=hidden)
+    set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 endif()
 
 IF(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-    SET(CMAKE_CXX_STANDARD 14)
+    SET(CMAKE_CXX_STANDARD 17)
 ELSEIF(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-    SET(CMAKE_CXX_STANDARD 14)
+    SET(CMAKE_CXX_STANDARD 17)
 ELSEIF(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-    SET(CMAKE_CXX_STANDARD 14)
+    SET(CMAKE_CXX_STANDARD 17)
 ELSE()
     message(WARNING "C++ standard could not be set because compiler is not GNU, Clang or MSVC.")
 ENDIF()

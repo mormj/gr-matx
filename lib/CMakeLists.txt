@@ -5,14 +5,16 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 #
-
+  
+find_package(matx CONFIG REQUIRED)
+find_package(gnuradio-cuda REQUIRED)
+find_package(CUDAToolkit 11.4 REQUIRED)
 ########################################################################
 # Setup library
 ########################################################################
 include(GrPlatform) #define LIB_SUFFIX
-
 list(APPEND matx_sources
-)
+    add_impl.cu )
 
 set(matx_sources "${matx_sources}" PARENT_SCOPE)
 if(NOT matx_sources)
@@ -20,8 +22,22 @@ if(NOT matx_sources)
     return()
 endif(NOT matx_sources)
 
-add_library(gnuradio-matx SHARED ${matx_sources})
+add_library(gnuradio-matx STATIC ${matx_sources})
+set_target_properties(gnuradio-matx PROPERTIES 
+    POSITION_INDEPENDENT_CODE ON
+    CUDA_VISIBILITY_PRESET "hidden"
+    CUDA_SEPARABLE_COMPILATION ON
+)
+target_include_directories(gnuradio-matx
+    PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../include>
+    PUBLIC $<INSTALL_INTERFACE:include>
+    ${CUDA_INCLUDE_DIRS} 
+  )
+set_property(TARGET gnuradio-matx PROPERTY CUDA_STANDARD 17)
 target_link_libraries(gnuradio-matx gnuradio::gnuradio-runtime)
+# target_compile_options(gnuradio-matx PRIVATE "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:-gencode arch=compute_75,code=sm_75>")
+
+
 target_include_directories(gnuradio-matx
     PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../include>
     PUBLIC $<INSTALL_INTERFACE:include>
@@ -33,6 +49,19 @@ if(APPLE)
         INSTALL_NAME_DIR "${CMAKE_INSTALL_PREFIX}/lib"
     )
 endif(APPLE)
+
+
+if (MSVC)
+    target_compile_options(gnuradio-matx INTERFACE /W4 /WX)
+else()
+    target_compile_options(gnuradio-matx INTERFACE ${WARN_FLAGS})
+    target_compile_options(gnuradio-matx INTERFACE ${MATX_CUDA_FLAGS})
+    target_compile_options(gnuradio-matx INTERFACE -DMATX_ROOT="${PROJECT_SOURCE_DIR}")
+endif()  
+
+if (MULTI_GPU)
+    set_target_properties(gnuradio-matx PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
+endif()
 
 ########################################################################
 # Install built library files
