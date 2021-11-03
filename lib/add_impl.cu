@@ -9,7 +9,7 @@
 #include <gnuradio/io_signature.h>
 #include <gnuradio/cuda/cuda_buffer.h>
 
-// #include "matx.h"
+#include "matx.h"
 
 namespace gr {
 namespace matx {

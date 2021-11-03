@@ -22,7 +22,7 @@ if(NOT matx_sources)
     return()
 endif(NOT matx_sources)
 
-add_library(gnuradio-matx STATIC ${matx_sources})
+add_library(gnuradio-matx SHARED ${matx_sources})
 set_target_properties(gnuradio-matx PROPERTIES 
     POSITION_INDEPENDENT_CODE ON
     CUDA_VISIBILITY_PRESET "hidden"
@@ -34,7 +34,8 @@ target_include_directories(gnuradio-matx
     ${CUDA_INCLUDE_DIRS} 
   )
 set_property(TARGET gnuradio-matx PROPERTY CUDA_STANDARD 17)
-target_link_libraries(gnuradio-matx gnuradio::gnuradio-runtime)
+target_link_libraries(gnuradio-matx PUBLIC gnuradio::gnuradio-runtime)
+target_link_libraries(gnuradio-matx PRIVATE matx::matx)
 # target_compile_options(gnuradio-matx PRIVATE "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:-gencode arch=compute_75,code=sm_75>")
 
 
