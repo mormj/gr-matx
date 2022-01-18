@@ -8,10 +8,10 @@
 ########################################################################
 # Check if there is C++ code at all
 ########################################################################
-if(NOT howto_sources)
+if(NOT matx_sources)
     MESSAGE(STATUS "No C++ sources... skipping python bindings")
     return()
-endif(NOT howto_sources)
+endif(NOT matx_sources)
 
 ########################################################################
 # Check for pygccxml
@@ -28,12 +28,23 @@ include(GrPybind)
 # Python Bindings
 ########################################################################
 
-list(APPEND howto_python_files
+list(APPEND matx_python_files
+    add_python.cc
     python_bindings.cc)
 
-GR_PYBIND_MAKE_OOT(howto
-   ../..
-   gr::howto
-   "${howto_python_files}")
+GR_PYBIND_MAKE_OOT(matx
+   ../../..
+   gr::matx
+   "${matx_python_files}")
 
-install(TARGETS howto_python DESTINATION ${GR_PYTHON_DIR}/howto COMPONENT pythonapi)
+# target_link_libraries(matx_python PUBLIC gnuradio::gnuradio-cuda)
+
+# copy in bindings .so file for use in QA test module
+add_custom_target(
+  copy_bindings_for_tests ALL
+  COMMAND
+    ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_BINARY_DIR}/*.so"
+    ${CMAKE_BINARY_DIR}/test_modules/gnuradio/matx/
+  DEPENDS matx_python)
+
+install(TARGETS matx_python DESTINATION ${GR_PYTHON_DIR}/gnuradio/matx COMPONENT pythonapi)

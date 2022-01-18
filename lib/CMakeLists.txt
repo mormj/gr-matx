@@ -6,9 +6,6 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 #
   
-find_package(matx CONFIG REQUIRED)
-find_package(gnuradio-cuda REQUIRED)
-find_package(CUDAToolkit 11.4 REQUIRED)
 ########################################################################
 # Setup library
 ########################################################################
@@ -34,8 +31,8 @@ target_include_directories(gnuradio-matx
     ${CUDA_INCLUDE_DIRS} 
   )
 set_property(TARGET gnuradio-matx PROPERTY CUDA_STANDARD 17)
-target_link_libraries(gnuradio-matx PUBLIC gnuradio::gnuradio-runtime)
-target_link_libraries(gnuradio-matx PRIVATE matx::matx)
+target_link_libraries(gnuradio-matx PUBLIC gnuradio::gnuradio-runtime gnuradio::gnuradio-cuda)
+target_link_libraries(gnuradio-matx PUBLIC matx::matx)
 # target_compile_options(gnuradio-matx PRIVATE "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:-gencode arch=compute_75,code=sm_75>")
 
 
@@ -45,20 +42,20 @@ target_include_directories(gnuradio-matx
   )
 set_target_properties(gnuradio-matx PROPERTIES DEFINE_SYMBOL "gnuradio_matx_EXPORTS")
 
-if(APPLE)
-    set_target_properties(gnuradio-matx PROPERTIES
-        INSTALL_NAME_DIR "${CMAKE_INSTALL_PREFIX}/lib"
-    )
-endif(APPLE)
+# if(APPLE)
+#     set_target_properties(gnuradio-matx PROPERTIES
+#         INSTALL_NAME_DIR "${CMAKE_INSTALL_PREFIX}/lib"
+#     )
+# endif(APPLE)
 
 
-if (MSVC)
-    target_compile_options(gnuradio-matx INTERFACE /W4 /WX)
-else()
-    target_compile_options(gnuradio-matx INTERFACE ${WARN_FLAGS})
-    target_compile_options(gnuradio-matx INTERFACE ${MATX_CUDA_FLAGS})
-    target_compile_options(gnuradio-matx INTERFACE -DMATX_ROOT="${PROJECT_SOURCE_DIR}")
-endif()  
+# if (MSVC)
+#     target_compile_options(gnuradio-matx INTERFACE /W4 /WX)
+# else()
+#     target_compile_options(gnuradio-matx INTERFACE ${WARN_FLAGS})
+#     target_compile_options(gnuradio-matx INTERFACE ${MATX_CUDA_FLAGS})
+#     target_compile_options(gnuradio-matx INTERFACE -DMATX_ROOT="${PROJECT_SOURCE_DIR}")
+# endif()  
 
 if (MULTI_GPU)
     set_target_properties(gnuradio-matx PROPERTIES CUDA_SEPARABLE_COMPILATION ON)

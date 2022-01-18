@@ -13,6 +13,11 @@ cmake_minimum_required(VERSION 3.8)
 project(gr-matx CXX C CUDA)
 enable_testing()
 
+find_package(matx CONFIG REQUIRED)
+find_package(gnuradio-cuda REQUIRED)
+find_package(CUDAToolkit 11.5 REQUIRED)
+find_package(pybind11 REQUIRED)
+
 file(DOWNLOAD https://raw.githubusercontent.com/rapidsai/rapids-cmake/branch-21.12/RAPIDS.cmake
      ${CMAKE_BINARY_DIR}/RAPIDS.cmake)
 include(${CMAKE_BINARY_DIR}/RAPIDS.cmake)
@@ -48,6 +53,8 @@ set(CMAKE_BUILD_TYPE ${CMAKE_BUILD_TYPE} CACHE STRING "")
 
 # Make sure our local CMake Modules path comes first
 list(INSERT CMAKE_MODULE_PATH 0 ${CMAKE_SOURCE_DIR}/cmake/Modules)
+# Find gnuradio to get access to the cmake modules
+find_package(Gnuradio "3.10" REQUIRED)
 
 # Set the version information here
 set(VERSION_MAJOR 1)
@@ -61,39 +68,20 @@ cmake_policy(SET CMP0011 NEW)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 ########################################################################
-# Compiler specific setup
+# Minimum Version Requirements
 ########################################################################
-if((CMAKE_CXX_COMPILER_ID MATCHES "Clang" OR
-    CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-    AND NOT WIN32)
-    #http://gcc.gnu.org/wiki/Visibility
-    set(CMAKE_CXX_VISIBILITY_PRESET hidden)
-endif()
 
-IF(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-    SET(CMAKE_CXX_STANDARD 17)
-ELSEIF(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-    SET(CMAKE_CXX_STANDARD 17)
-ELSEIF(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-    SET(CMAKE_CXX_STANDARD 17)
-ELSE()
-    message(WARNING "C++ standard could not be set because compiler is not GNU, Clang or MSVC.")
-ENDIF()
+include(GrMinReq)
 
-IF(CMAKE_C_COMPILER_ID STREQUAL "GNU")
-    SET(CMAKE_C_STANDARD 11)
-ELSEIF(CMAKE_C_COMPILER_ID MATCHES "Clang")
-    SET(CMAKE_C_STANDARD 11)
-ELSEIF(CMAKE_C_COMPILER_ID STREQUAL "MSVC")
-    SET(CMAKE_C_STANDARD 11)
-ELSE()
-    message(WARNING "C standard could not be set because compiler is not GNU, Clang or MSVC.")
-ENDIF()
+########################################################################
+# Compiler settings
+########################################################################
+
+include(GrCompilerSettings)
 
 ########################################################################
 # Install directories
 ########################################################################
-find_package(Gnuradio "3.9" REQUIRED)
 include(GrVersion)
 
 include(GrPlatform) #define LIB_SUFFIX
@@ -102,8 +90,8 @@ if(NOT CMAKE_MODULES_DIR)
   set(CMAKE_MODULES_DIR lib${LIB_SUFFIX}/cmake)
 endif(NOT CMAKE_MODULES_DIR)
 
-set(GR_INCLUDE_DIR      include/matx)
-set(GR_CMAKE_DIR        ${CMAKE_MODULES_DIR}/matx)
+set(GR_INCLUDE_DIR      include/gnuradio/matx)
+set(GR_CMAKE_DIR        ${CMAKE_MODULES_DIR}/gnuradio-matx)
 set(GR_PKG_DATA_DIR     ${GR_DATA_DIR}/${CMAKE_PROJECT_NAME})
 set(GR_PKG_DOC_DIR      ${GR_DOC_DIR}/${CMAKE_PROJECT_NAME})
 set(GR_PKG_CONF_DIR     ${GR_CONF_DIR}/${CMAKE_PROJECT_NAME}/conf.d)
@@ -175,6 +163,14 @@ endif(ENABLE_PYTHON)
 # Install cmake search helper for this library
 ########################################################################
 
-install(FILES cmake/Modules/matxConfig.cmake
-    DESTINATION ${CMAKE_MODULES_DIR}/matx
+install(FILES cmake/Modules/gnuradio-matxConfig.cmake
+    DESTINATION ${GR_CMAKE_DIR}
 )
+
+include(CMakePackageConfigHelpers)
+configure_package_config_file(
+    ${PROJECT_SOURCE_DIR}/cmake/Modules/targetConfig.cmake.in
+    ${CMAKE_CURRENT_BINARY_DIR}/cmake/Modules/${target}Config.cmake
+    INSTALL_DESTINATION ${GR_CMAKE_DIR}
+)
+

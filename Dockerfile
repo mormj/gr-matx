@@ -1,4 +1,4 @@
-FROM nvidia/cuda:11.4.2-devel-ubuntu20.04
+FROM nvidia/cuda:11.5.0-devel-ubuntu20.04
 
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -yq \
     build-essential \
@@ -125,9 +125,7 @@ RUN mkdir -p /src/build \
 
 # Install GNU Radio
 RUN mkdir -p /src/build \
-&& git clone https://github.com/gnuradio/gnuradio.git /src/gnuradio --branch master
-RUN cd /src/gnuradio && git checkout 50d00f108c3ad62cd7beed6a4cbfdf4f0321c5aa \
-&& wget https://github.com/gnuradio/gnuradio/pull/5265.diff && git apply 5265.diff
+&& git clone https://github.com/gnuradio/gnuradio.git /src/gnuradio --branch maint-3.10
 RUN cd /src/gnuradio && mkdir build && cd build && \
   cmake .. && make -j10 && make install
 

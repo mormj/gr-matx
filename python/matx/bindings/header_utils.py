@@ -6,7 +6,7 @@ import re
 
 class PybindHeaderParser:
     def __init__(self, pathname):
-        with open(pathname,'r') as f:
+        with open(pathname, 'r') as f:
             self.file_txt = f.read()
 
     def get_flag_automatic(self):

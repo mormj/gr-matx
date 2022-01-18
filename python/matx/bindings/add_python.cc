@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Free Software Foundation, Inc.
+ * Copyright 2022 Free Software Foundation, Inc.
  *
  * This file is part of GNU Radio
  *
@@ -30,7 +30,7 @@ namespace py = pybind11;
 void bind_add(py::module& m)
 {
 
-    using add    = gr::matx::add;
+    using add    = ::gr::matx::add;
 
 
     py::class_<add, gr::sync_block, gr::block, gr::basic_block,
